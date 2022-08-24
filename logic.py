@@ -1,5 +1,6 @@
 from cmath import sqrt
 import itertools as it
+import numpy as np
 from re import S
 '''
 A ou B
@@ -148,10 +149,14 @@ class predicade:
                     if oper not in self.values.keys():
                         if ent[i] == 'or':
                             r = self.ou((parm1,parm2))
-                            print(r)
+                            #print(r)
                         if ent[i] == 'and':
                             r = self.e((parm1,parm2))
-                            print(r)
+                            #print(r)
+                        if ent[i] == '>':
+                            #print(parm1,parm2)
+                            r = self.implica((parm1,parm2))
+                            #print(r)
                         ent.remove(parm1)
                         ent.remove(parm2)
                         ent[0] = r
@@ -187,19 +192,77 @@ class predicade:
                 else:
                     res.append(0)
             self.values[param[0] + 'or' + param[1]] = res
-            print(self.values)
+            #print(self.values)
             return param[0] + 'or' + param[1]
         except:
             return -1
-    def e(self) -> None:
+    def e(self,param: (str)) -> None:
         res = []
-        for i in self.tbl:
-            if i[0] != i[1]:
-                res.append(0)
-            elif i[0] == i[1] and i[0] == 0:
-                res.append(0)
-            else:
-                res.append(1)
-        return res
+        try:
+            a = self.values[param[0]]
+            b = self.values[param[1]]
+            #print(f"{a}\n{b}")
+            #print(a)
+            #print(b)
+            for i in range(len(a)):
+                if a[i] != b[i]:
+                    res.append(0)
+                elif a[i] == b[i] and a[i] == 0:
+                    res.append(0)            
+                else:
+                    res.append(1)
+            #print(res)
+            self.values[param[0] + 'and' + param[1]] = res
+            #print(self.values)
+            return param[0] + 'and' + param[1]
+        except:
+            return -1
 
-a = predicade(("a","b")).predicade("a or ~b and ~a")
+    def implica(self,param:(str)) -> None:
+        res = []
+        try:
+            a = self.values[param[0]]
+            b = self.values[param[1]]
+
+            for i in range(len(a)):
+                if a[i] != b[i] and a[i] == 0:
+                    res.append(1)
+                elif  a[i] != b[i] and a[i] == 1:
+                    res.append(0)
+                else:
+                    res.append(1)
+            self.values[param[0] + '>' + param[1]] = res
+            return param[0] + '>' + param[1]
+        except:
+            return -1
+
+    def show(self):
+        dt = self.values
+        len_array = len(dt[list(dt.keys())[1]])
+        len_dict = len(list(dt.keys()))
+
+        mx = np.zeros((len_array,len_dict),dtype=int)
+
+        c = 0
+        l = 0
+        for i in dt:
+            for j in dt[i]:
+                if c > len(dt[i]) - 1:
+                    c = 0
+                mx[c][l] = j
+                c += 1
+            l += 1
+
+        for i in dt.keys():
+            #print(f"\t{i}")
+            print (f"{i:^10}",end="")
+        print("\n")
+        for i in range(len_array):
+            for j in range(len_dict):
+                print(f"{mx[i][j]:^10}",end="")
+            print("\n")
+
+a = predicade(("p","q","r","s"))
+a.predicade("p > ~q and r or s")
+a.show()
+
