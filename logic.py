@@ -74,6 +74,11 @@ class predicade:
                             del_(i,re)
                             del _operator[_operator.index('>')]
                             break
+                        if stg[i] == '<':
+                            re = self.biimplica((param1,param2))
+                            del_(i,re)
+                            del _operator[_operator.index('<')]
+                            break
                         print(param1,i,param2)
                     else:
                         print("Erro na indentidição dos parametros")
@@ -137,6 +142,8 @@ class predicade:
                             #print(re)
                         if ord[i] == '>':
                             self.implica((param1,param2[0]))
+                        if ord[i] == '<':
+                            self.biimplica((param1,param2[0]))
                     #print(param1.replace(" ",''),param2)
                 else:
                     pass
@@ -217,6 +224,25 @@ class predicade:
         except:
             return -1
 
+    def biimplica(self,param:(str)) -> None:
+        res = []
+        print(param)
+        try:
+            a = self.values[param[0]]
+            b = self.values[param[1]]
+
+            for i in range(len(a)):
+                if a[i] == b[i] and a[i] == 1:
+                    res.append(1)
+                elif  a[i] != b[i]:
+                    res.append(0)
+                else:
+                    res.append(1)
+            self.values[param[0] + '<' + param[1]] = res
+            return param[0] + '<' + param[1]
+        except:
+            return -1
+
     def show(self):
         dt = self.values
         len_array = len(dt[list(dt.keys())[1]])
@@ -244,6 +270,6 @@ class predicade:
             print("\n")
 
 a = predicade(("p","q"))
-a.predicade("( p > q ) or ( ~p > p )")
+a.predicade("( ~p < ~q ) < ( p < q )")
 a.show()
 
