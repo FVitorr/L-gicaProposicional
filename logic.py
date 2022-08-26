@@ -1,106 +1,5 @@
-from cmath import sqrt
 import itertools as it
 import numpy as np
-from re import S
-'''
-A ou B
-v    v
-v    f
-f    v
-f    f
-''''''
-class predicade:
-    def __init__(self) -> None:
-        perm = [i for i in it.permutations([0,1] * len(param), len(param))]
-
-        #Combinaçoes posiveis sem repetição
-        comb = []
-        for i in perm:
-            if list(i) not in comb:
-                comb.append(list(i))
-        #Retornar uma matriz
-        if "~" in list(param):
-            a = self.nao(param[list(param).index("~")])
-            for i in range(len(a)):
-                comb[i].append(a[i])
-        self.tbl = comb
-        self.param = param
-
-    def ou(self, param) -> None:
-        print(self.tbl)
-        res = []
-        for i in self.tbl:
-            if i[0] != i[1]:
-                i.append(1)
-            elif i[0] == i[1] and i[0] == 1:
-                i.append(1)
-            else:
-                i.append(0)
-        return 1
-
-    def e(self) -> None:
-        res = []
-        for i in self.tbl:
-            if i[0] != i[1]:
-                res.append(0)
-            elif i[0] == i[1] and i[0] == 0:
-                res.append(0)
-            else:
-                res.append(1)
-        return res
-    
-    def implica(self) -> None:
-        res = []
-        print(self.tbl)
-        for i in self.tbl:
-            if i[0] != i[1] and i[0] == 0:
-                res.append(1)
-            elif i[0] != i[1] and i[0] == 1:
-                res.append(0)
-            else:
-                res.append(1)
-        return res
-    
-    def biimplica(self) -> None:
-        res = []
-        print(self.tbl)
-        for i in self.tbl:
-            if i[0] != i[1]:
-                res.append(0)
-            else:
-                res.append(1)
-        return res
-    
-    def nao(self,param_: str) -> None:
-        try:
-            param = list(self.param).index(param_)
-            res = []
-            for i in self.tbl:
-                #print(i[param])
-                if i[param] != 0:
-                    res.append(0)
-                else:
-                    res.append(1)
-            return res
-        except:
-            return -1
-
-    def show(self):
-        print(self.tbl)
-        print(f"{self.param[0]}\t{self.param[1]}")
-        for i in self.tbl:
-            print(f"{i[0]}\t{i[1]}")
-        pass
-    
-
-a = predicade(("~a","b"))
-
-print(a.ou("b"))
-#print(a.e())
-#print(a.implica())
-#print(a.biimplica())
-#print(a.nao("a"))
-a.show()'''
 
 class predicade:
     def __init__(self,param:(str)) -> None:
@@ -123,45 +22,111 @@ class predicade:
             cont += 1
         self.values = values
         #print(values)
+    def ordPref(self,entry):
+        cont = 0
+        stg = entry
+        while len(stg) > 0:
+            if cont > len(stg):
+                cont = 0
+            if '(' in stg:
+                init = 0
+                cont = 0
+                for i in range(cont,len(stg)):
+                    if stg[i] == '(':
+                        init = i 
+                    if stg[i] == ')':
+                        fim = i
+                        cont = i
+                        break
+                stg[init] = ''.join(stg[init + 1:fim])
+                for j in range(init,fim):
+                    del stg[init + 1]
+                #stg = stg.replace(str(stg[old:fim+1]) , stg[init:fim].replace(' ',''))
+            else:
+                break
+        return stg
+    def execute(self,entry):
+        stg = entry
+        _operator = [i for i in stg if i in self.operator]
+        def del_(i,re):
+            stg[i-1] = re
+            del stg[i+1]
+            del stg[i]
+        while len(_operator) > 0:
+            for i in range(len(stg)):
+                if stg[i] in self.operator:
+                    param1 = stg[i-1]
+                    param2 = stg[i+1]
+                    print(param1,param2)
+                    if param1 not in self.operator and param2 not in self.operator:
+                        print(stg)
+                        if stg[i] == 'or':
+                            re = self.ou((param1,param2))
+                            print(re)
+                            del_(i,re)
+                            del _operator[_operator.index('or')]
+                            print(stg)
+                            break
+                        if stg[i] == 'and':
+                            re = self.e((param1,param2))
+                            print(re)
+                            del_(i,re)
+                            del _operator[_operator.index('and')]
+                            break
+                        if stg[i] == '>':
+                            re = self.implica((param1,param2))
+                            del_(i,re)
+                            del _operator[_operator.index('>')]
+                            break
+                        print(param1,i,param2)
+                    else:
+                        print("Erro na indentidição dos parametros")
+                        break
+            _operator = [i for i in stg if i in self.operator]
 
     def predicade(self,entry: str) -> None:
         #tratar entrada 
         ent = list(entry.split(" "))
-        op = ''
         cont = 0
         #Manipular str e fazer operações em ordem
-        print(ent)
         for i in range(len(ent)):
             if "~" in ent[i]:
                 self.nao(ent[i][1])
 
-        _operator = [i for i in ent if i in self.operator]
-        cont = len(ent)
-        j = 0
-        while j < len(_operator):
-            for i in range(cont):
-                #print(self.values)
-                if ent[i] in self.operator:
-                    parm1 = ent[i - 1]
-                    parm2 = ent[i + 1]
-                    oper = parm1 + ent[i] + parm2
-                    #Operação não realizada ?
-                    if oper not in self.values.keys():
-                        if ent[i] == 'or':
-                            r = self.ou((parm1,parm2))
-                            #print(r)
-                        if ent[i] == 'and':
-                            r = self.e((parm1,parm2))
-                            #print(r)
-                        if ent[i] == '>':
-                            #print(parm1,parm2)
-                            r = self.implica((parm1,parm2))
-                            #print(r)
-                        ent.remove(parm1)
-                        ent.remove(parm2)
-                        ent[0] = r
-                        break
-            _operator = [i for i in ent if i in self.operator]
+        if '(' in ent:
+            ord = self.ordPref(ent)
+    
+            for i in range(len(ord)):
+                if ord[i] in self.operator:
+                    param1 = ord[i -1]
+                    #se o param1 não existir no dicionario separ funçoes e adc
+                    if param1 not in self.values.keys():
+                        try:
+                            param1 = param1.replace("and"," and ")
+                        except:
+                            param1 = param1.replace("or"," or ")
+                        for j in range(len(param1)):
+                            if param1[j] in self.operator and param1[j + 1] != ' ' and param1[j] != '~':
+                                param1 = param1.replace(param1[j]," "+ param1[j] +" ")
+                                self.execute(param1.split(" "))
+                                j += 2
+                    param2 = ord[i + 1]
+                    if param2 not in self.values.keys():
+                        try:
+                            param2 = param2.replace("and"," and ")
+                        except:
+                            param2 = param1.replace("or"," or ")
+                        for j in range(len(param1)):
+                            if param1[j] in self.operator and param1[j + 1] != ' ' and param1[j] != '~':
+                                param1 = param1.replace(param1[j]," "+ param1[j] +" ")
+                                self.execute(param1.split(" "))
+                                j += 2
+                else:
+
+                    pass
+        else:
+            self.execute(entry)
+        
 
     
     def nao(self,param_: str) -> None:
@@ -263,6 +228,6 @@ class predicade:
             print("\n")
 
 a = predicade(("p","q","r","s"))
-a.predicade("p > ~q and r or s")
+a.predicade("( p > ~q and r ) or ( s and p )")
 a.show()
 
