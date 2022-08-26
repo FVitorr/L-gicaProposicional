@@ -3,7 +3,7 @@ import numpy as np
 
 class predicade:
     def __init__(self,param:(str)) -> None:
-        self.operator = ["and",">",")","(","or","~"]
+        self.operator = ["and",">",")","(","or","~","<"]
         values = { **dict.fromkeys(param, -1) }
         perm = [i for i in it.permutations([0,1] * len(param), len(param))]
 
@@ -57,19 +57,15 @@ class predicade:
                 if stg[i] in self.operator:
                     param1 = stg[i-1]
                     param2 = stg[i+1]
-                    print(param1,param2)
                     if param1 not in self.operator and param2 not in self.operator:
-                        print(stg)
+                    
                         if stg[i] == 'or':
                             re = self.ou((param1,param2))
-                            print(re)
                             del_(i,re)
                             del _operator[_operator.index('or')]
-                            print(stg)
                             break
                         if stg[i] == 'and':
                             re = self.e((param1,param2))
-                            print(re)
                             del_(i,re)
                             del _operator[_operator.index('and')]
                             break
@@ -88,6 +84,7 @@ class predicade:
         #tratar entrada 
         ent = list(entry.split(" "))
         cont = 0
+        print(ent)
         #Manipular str e fazer operações em ordem
         for i in range(len(ent)):
             if "~" in ent[i]:
@@ -108,21 +105,40 @@ class predicade:
                         for j in range(len(param1)):
                             if param1[j] in self.operator and param1[j + 1] != ' ' and param1[j] != '~':
                                 param1 = param1.replace(param1[j]," "+ param1[j] +" ")
-                                self.execute(param1.split(" "))
+                                re = self.execute(param1.split(" "))
+                                #print(self.values.keys())
                                 j += 2
                     param2 = ord[i + 1]
                     if param2 not in self.values.keys():
+                        #print(param2)
                         try:
                             param2 = param2.replace("and"," and ")
                         except:
-                            param2 = param1.replace("or"," or ")
-                        for j in range(len(param1)):
-                            if param1[j] in self.operator and param1[j + 1] != ' ' and param1[j] != '~':
-                                param1 = param1.replace(param1[j]," "+ param1[j] +" ")
-                                self.execute(param1.split(" "))
-                                j += 2
+                            param2 = param2.replace("or"," or ")
+                        for j in param2:
+                            if j in self.operator and j != '~':
+                                param2 = param2.replace(j," " + str(j) + " ")
+                        #print(param2)
+                        param2 = param2.split(' ')
+                        #print(param2)
+                        for j in range(len(param2)):
+                            if param2[j] in self.operator and param2[j] != '~':
+                                param2[j] = str(param2[j])
+                                #print(param2)
+                                re = self.execute(param2)
+                                break
+                        param1 = str(param1).replace(" ",'')
+                        #print(ord,ord[i])
+                        if ord[i] == 'and':
+                            self.e((param1,param2[0]))
+                        if ord[i] == 'or':
+                            #print("Comand or")
+                            self.ou((param1,param2[0]))
+                            #print(re)
+                        if ord[i] == '>':
+                            self.implica((param1,param2[0]))
+                    #print(param1.replace(" ",''),param2)
                 else:
-
                     pass
         else:
             self.execute(entry)
@@ -227,7 +243,7 @@ class predicade:
                 print(f"{mx[i][j]:^10}",end="")
             print("\n")
 
-a = predicade(("p","q","r","s"))
-a.predicade("( p > ~q and r ) or ( s and p )")
+a = predicade(("p","q"))
+a.predicade("( p > q ) or ( ~p > p )")
 a.show()
 
