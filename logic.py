@@ -1,152 +1,157 @@
+from ast import operator
 import itertools as it
 import numpy as np
 
 class predicade:
     def __init__(self,param:(str)) -> None:
-        self.operator = ["and",">",")","(","or","~","<"]
+        self.operator = ["and",">",")","(","or","~","<"] #array onde armazena os operadores da logica
+        '''Os dados de saidas são armmazenados em um dict para facilitar na ordem de procedencia
+        ( a > b ) and (a > ~b ) -> dict.key [a, b, ~b, a>b, a>~b, a>banda>~b]'''
         values = { **dict.fromkeys(param, -1) }
-        perm = [i for i in it.permutations([0,1] * len(param), len(param))]
+        perm = [i for i in it.permutations([0,1] * len(param), len(param))] #Gerar (0,1) pros valores em dicionario
 
-        #Combinaçoes posiveis sem repetição
-        comb = []
+        comb = [] #Combinaçoes posiveis sem repetição
         for i in perm:
             if list(i) not in comb:
                 comb.append(list(i))
+
+        #Criar Dicionarios com nome do parametro e seu valores
         cont = 0
-        #Criar Dicionarios com nome da preposição e seus valores
         for i in param:
-            v = []
-            for j in comb:
-                v.append(j[cont])
+            v = [j[cont] for j in comb]
             values[i] = v
             cont += 1
         self.values = values
-        #print(values)
-    def ordPref(self,entry):
+
+    def ordPref(self,entry): #funçao para tratar de sentenças com ordem de procedencia "(",")"
         cont = 0
-        stg = entry
-        while len(stg) > 0:
-            if cont > len(stg):
-                cont = 0
-            if '(' in stg:
-                init = 0
-                cont = 0
-                for i in range(cont,len(stg)):
-                    if stg[i] == '(':
-                        init = i 
+        stg = entry #realizar a copia da entrada 
+        while len(stg) > 0: #percorer stg
+            if cont > len(stg): cont = 0 # resetar cont (Variavel de controle sobre a posição no vetor), para range(0,max =len(stg))
+            if '(' in stg: 
+                cont, init = 0, 0
+                for i in range(cont,len(stg)): #Objetivo: encontrar os par de "(",")" stg[init],stg[end]
+                    if stg[i] == '(': init = i 
                     if stg[i] == ')':
-                        fim = i
-                        cont = i
-                        break
-                stg[init] = ''.join(stg[init + 1:fim])
-                for j in range(init,fim):
+                        end = i
+                        cont = i #atribuir valor de i a variavel cont que controla a posição q estamos no vetor stg
+                        break #parar de percorrer stg
+                #Alterar a posição "(" por conteudo stg[init + 1:end]
+                stg[init] = ''.join(stg[init + 1:end])
+                for j in range(init,end): #Deletar bloco stg[init] - stg[end] : 
                     del stg[init + 1]
-                #stg = stg.replace(str(stg[old:fim+1]) , stg[init:fim].replace(' ',''))
-            else:
+            else: # se a operação anterior não for executada, significa que não existe mais "(" ")" para encontrar
                 break
         return stg
-    def execute(self,entry):
+
+    def execute(self,entry): #bloco de operaçoes de sentenças sem ordem de procedencia ou seja da Esquerda para direita
         stg = entry
-        _operator = [i for i in stg if i in self.operator]
-        def del_(i,re):
+        _operator = [i for i in stg if i in self.operator] # separar operadores que existem em stg
+
+        #Função de uso unico 
+        def del_(i,re,op): #Deletar bloco de operaçoes ja executada
             stg[i-1] = re
             del stg[i+1]
             del stg[i]
-        while len(_operator) > 0:
-            for i in range(len(stg)):
-                if stg[i] in self.operator:
-                    param1 = stg[i-1]
-                    param2 = stg[i+1]
+            del _operator[_operator.index(op)]
+
+        while len(_operator) > 0: #Interar sobre _operator: garantir que execute de todas as operaçoes logicas
+            for i in range(len(stg)): # for (int i = 0; i < len(stg); i++)
+                if stg[i] in self.operator: #se stg[i] for um operador param1 stg[i - 1] param2 = stg[i + 1]
+                    param1, param2 = stg[i-1], stg[i+1]
+                    #Verificar se os parametros não são valores iguais a operaçoes
                     if param1 not in self.operator and param2 not in self.operator:
                     
                         if stg[i] == 'or':
                             re = self.ou((param1,param2))
-                            del_(i,re)
-                            del _operator[_operator.index('or')]
+                            del_(i,re,'or') #deletar operação da stg e do _operator
                             break
                         if stg[i] == 'and':
                             re = self.e((param1,param2))
-                            del_(i,re)
-                            del _operator[_operator.index('and')]
+                            del_(i,re,'and')
                             break
                         if stg[i] == '>':
                             re = self.implica((param1,param2))
-                            del_(i,re)
-                            del _operator[_operator.index('>')]
+                            del_(i,re,'>')
                             break
                         if stg[i] == '<':
                             re = self.biimplica((param1,param2))
-                            del_(i,re)
-                            del _operator[_operator.index('<')]
+                            del_(i,re,'<')
                             break
-                        print(param1,i,param2)
                     else:
-                        print("Erro na indentidição dos parametros")
+                        print("Erro na Sentença Informada")
                         break
-            _operator = [i for i in stg if i in self.operator]
+            #_operator = [i for i in stg if i in self.operator]
 
     def predicade(self,entry: str) -> None:
         #tratar entrada 
         ent = list(entry.split(" "))
-        cont = 0
         print(ent)
-        #Manipular str e fazer operações em ordem
-        for i in range(len(ent)):
+        
+        for i in range(len(ent)): #Maior ordem de prioridade no script
             if "~" in ent[i]:
                 self.nao(ent[i][1])
 
         if '(' in ent:
             ord = self.ordPref(ent)
-    
-            for i in range(len(ord)):
-                if ord[i] in self.operator:
-                    param1 = ord[i -1]
-                    #se o param1 não existir no dicionario separ funçoes e adc
-                    if param1 not in self.values.keys():
-                        try:
-                            param1 = param1.replace("and"," and ")
-                        except:
-                            param1 = param1.replace("or"," or ")
-                        for j in range(len(param1)):
-                            if param1[j] in self.operator and param1[j + 1] != ' ' and param1[j] != '~':
-                                param1 = param1.replace(param1[j]," "+ param1[j] +" ")
-                                re = self.execute(param1.split(" "))
-                                #print(self.values.keys())
-                                j += 2
-                    param2 = ord[i + 1]
-                    if param2 not in self.values.keys():
-                        #print(param2)
-                        try:
-                            param2 = param2.replace("and"," and ")
-                        except:
-                            param2 = param2.replace("or"," or ")
-                        for j in param2:
-                            if j in self.operator and j != '~':
-                                param2 = param2.replace(j," " + str(j) + " ")
-                        #print(param2)
-                        param2 = param2.split(' ')
-                        #print(param2)
-                        for j in range(len(param2)):
-                            if param2[j] in self.operator and param2[j] != '~':
-                                param2[j] = str(param2[j])
-                                #print(param2)
-                                re = self.execute(param2)
-                                break
-                        param1 = str(param1).replace(" ",'')
-                        #print(ord,ord[i])
-                        if ord[i] == 'and':
-                            self.e((param1,param2[0]))
-                        if ord[i] == 'or':
-                            #print("Comand or")
-                            self.ou((param1,param2[0]))
-                            #print(re)
-                        if ord[i] == '>':
-                            self.implica((param1,param2[0]))
-                        if ord[i] == '<':
-                            self.biimplica((param1,param2[0]))
+            print("ord",ord)
+            _operator = [i for i in ord if i in self.operator]
+            while len(_operator) > 0:
+                for i in range(len(ord)):
+                    if ord[i] in self.operator:
+                        param1 = ord[i -1]
+                        #se o param1 não existir no dicionario separ funçoes e adc
+                        if param1 not in self.values.keys():
+                            try:
+                                param1 = param1.replace("and"," and ")
+                                param1 = param1.replace("or"," or ")
+                            except:
+                                pass
+                            for j in range(len(param1)):
+                                if param1[j] in self.operator and param1[j + 1] != ' ' and param1[j] != '~':
+                                    param1 = param1.replace(param1[j]," "+ param1[j] +" ")
+                                    re = self.execute(param1.split(" "))
+                                    #print(self.values.keys())
+                                    j += 2
+                        param2 = ord[i + 1]
+                        if param2 not in self.values.keys():
+                            #print(param2)
+                            try:
+                                param2 = param2.replace("and"," and ")
+                            except:
+                                param2 = param2.replace("or"," or ")
+                            for j in param2:
+                                if j in self.operator and j != '~':
+                                    param2 = param2.replace(j," " + str(j) + " ")
+                            #print(param2)
+                            param2 = param2.split(' ')
+                            #print(param2)
+                            for j in range(len(param2)):
+                                if param2[j] in self.operator and param2[j] != '~':
+                                    param2[j] = str(param2[j])
+                                    #print(param2)
+                                    re = self.execute(param2)
+                                    break
+                            param1 = str(param1).replace(" ",'')
+                            #print(ord,ord[i])
+                            #print(param1,param2)
+                            if ord[i] == 'and':
+                                re = self.e((param1,param2[0]))
+                            if ord[i] == 'or':
+                                self.ou((param1,param2[0]))
+                            if ord[i] == '>':
+                                self.implica((param1,param2[0]))
+                            if ord[i] == '<':
+                                re = self.biimplica((param1,param2[0]))
+
+                            ord[i -1] = re
+                            del ord[i + 1]
+                            del ord[i]
+                            del _operator[0]
+                            print('ord',ord)
+                            break
+                        
                     #print(param1.replace(" ",''),param2)
-                else:
-                    pass
         else:
             self.execute(entry)
         
@@ -180,7 +185,6 @@ class predicade:
                 else:
                     res.append(0)
             self.values[param[0] + 'or' + param[1]] = res
-            #print(self.values)
             return param[0] + 'or' + param[1]
         except:
             return -1
@@ -190,8 +194,7 @@ class predicade:
             a = self.values[param[0]]
             b = self.values[param[1]]
             #print(f"{a}\n{b}")
-            #print(a)
-            #print(b)
+
             for i in range(len(a)):
                 if a[i] != b[i]:
                     res.append(0)
@@ -199,9 +202,8 @@ class predicade:
                     res.append(0)            
                 else:
                     res.append(1)
-            #print(res)
+            #Adc operação ao dicionario
             self.values[param[0] + 'and' + param[1]] = res
-            #print(self.values)
             return param[0] + 'and' + param[1]
         except:
             return -1
@@ -226,7 +228,6 @@ class predicade:
 
     def biimplica(self,param:(str)) -> None:
         res = []
-        print(param)
         try:
             a = self.values[param[0]]
             b = self.values[param[1]]
@@ -265,11 +266,10 @@ class predicade:
             print (f"{i:^10}",end="")
         print("\n")
         for i in range(len_array):
-            for j in range(len_dict):
-                print(f"{mx[i][j]:^10}",end="")
+            for j in range(len_dict): print(f"{mx[i][j]:^10}",end="")
             print("\n")
 
 a = predicade(("p","q"))
-a.predicade("( ~p < ~q ) < ( p < q )")
+a.predicade("( ~p < ~q ) < ( p and q )")
 a.show()
 
