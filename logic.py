@@ -269,7 +269,10 @@ class predicade:
             for j in range(len_dict): print(f"{mx[i][j]:^10}",end="")
             print("\n")
 
+#"( ~p < ~q ) < ( p and q )"
+
 a = predicade(("p","q"))
-a.predicade("( ~p < ~q ) < ( p and q )")
+entry = '( ~p < ~q ) < ( p and q )'
+a.predicade(entry)
 a.show()
 
