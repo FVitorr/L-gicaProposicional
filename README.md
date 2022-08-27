@@ -5,7 +5,8 @@
 <hr>
 <p>
      ♻️  Este Script foi desenvolvido em python com o intuito de desenvolver as combinaçoes da Logica Proposicional
-    <br<br>Entradas:
+    <br<br>
+    Entradas:
     <ul>
         <li> 😃 predicade(("p","q")) - Definição das Proposições </li>
         <li> ⚡ ( ~p < ~q ) < ( p and q ) - Entrada
