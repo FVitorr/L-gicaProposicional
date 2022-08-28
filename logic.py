@@ -86,7 +86,7 @@ class predicade:
     def predicade(self,entry: str) -> None:
         #tratar entrada 
         ent = list(entry.split(" "))
-        print(ent)
+        print('Ent:', ent)
         
         for i in range(len(ent)): #Maior ordem de prioridade no script
             if "~" in ent[i]:
@@ -94,7 +94,7 @@ class predicade:
 
         if '(' in ent:
             ord = self.ordPref(ent)
-            print("ord",ord)
+            print("ord:",ord)
             _operator = [i for i in ord if i in self.operator]
             while len(_operator) > 0:
                 for i in range(len(ord)):
@@ -148,7 +148,7 @@ class predicade:
                             del ord[i + 1]
                             del ord[i]
                             del _operator[0]
-                            print('ord',ord)
+                            print('ord:',ord)
                             break
                         
                     #print(param1.replace(" ",''),param2)
@@ -260,19 +260,26 @@ class predicade:
                 mx[c][l] = j
                 c += 1
             l += 1
-
+        print("\n")
         for i in dt.keys():
             #print(f"\t{i}")
-            print (f"{i:^10}",end="")
+            print (f"{i:^12}",end="")
         print("\n")
         for i in range(len_array):
-            for j in range(len_dict): print(f"{mx[i][j]:^10}",end="")
+            for j in range(len_dict): print(f"{mx[i][j]:^12}",end="")
             print("\n")
 
 #"( ~p < ~q ) < ( p and q )"
 
-a = predicade(("p","q"))
-entry = '( ~p < ~q ) < ( p and q )'
-a.predicade(entry)
-a.show()
+ #Array com os preposiçao
+#'( ~p < ~q ) < ( p and q )'
+while True:
+    entry = input("Sentença:\n")
+    if entry == "0":
+        print("Exit")
+        break
+    print("\n")
+    a = predicade(("p","q"))
+    a.predicade(entry)
+    a.show()
 
