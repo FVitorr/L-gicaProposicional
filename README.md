@@ -17,6 +17,13 @@
     </ul>
 </p>
 <hr>
+<h4> Notas: </h4>
+<p>
+<ul>
+  <li>Bugs em sentenças com ordem de prioridade</li>
+  <li>Bugs na saida</li>
+</ul>
+</p>
 <center>
 <h4>📍 Demonstração<h4>
 <img src = Animação.gif>
