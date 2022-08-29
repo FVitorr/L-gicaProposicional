@@ -249,7 +249,7 @@ class predicade:
         len_array = len(dt[list(dt.keys())[1]])
         len_dict = len(list(dt.keys()))
 
-        mx = np.zeros((len_array,len_dict),dtype=int)
+        mx = np.zeros((len_array,len_dict),dtype=int) #Array q vai q guardar os dados 
 
         c = 0
         l = 0
