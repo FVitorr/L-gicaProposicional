@@ -20,7 +20,7 @@
 <h4> Notas: </h4>
 <p>
 <ul>
-  <li>Bugs em sentenças com ordem de prioridade</li>
+  <li>Bugs na ordem de prioridade</li>
   <li>Bugs na saida</li>
 </ul>
 </p>
